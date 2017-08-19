@@ -1,5 +1,4 @@
 import test from 'ava';
-import {promisify} from 'util';
 import {
   constants,
   createConnection,
@@ -13,7 +12,9 @@ import {
 const {RABBITMQ_USER, RABBITMQ_PASSWORD} = process.env;
 const RABBITMQ_URL = `amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@localhost/`;
 
-const sleep = setTimeout[promisify.custom];
+function sleep(time) {
+  return new Promise(resolve => setTimeout(resolve, time));
+}
 
 const getRandomInt = function (min, max) {
   min = Math.ceil(min);
