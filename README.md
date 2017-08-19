@@ -134,6 +134,10 @@ Retry
 
 This module implements a [retry queue with exponential backoff](https://felipeelias.github.io/rabbitmq/2016/02/22/rabbitmq-exponential-backoff.html) and is enabled by default for work queues. I've found this to be very useful in my projects, and is perhaps the best justification for using this library over amqplib directly.
 
+Implementations
+---------------
+
+* [hapi-rabbitmq](https://github.com/mshick/hapi-rabbitmq)
 
 TODO
 ----
