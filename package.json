@@ -1,0 +1,69 @@
+{
+  "name": "librabbitmq",
+  "version": "0.1.0",
+  "author": "Michael Shick <m@shick.us>",
+  "license": "MIT",
+  "description": "Easy to use abstractions over RabbitMQ.",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
+  "scripts": {
+    "build": "rimraf lib && NODE_ENV=production babel src -d lib",
+    "prepublish": "npm run build",
+    "lint": "eslint src",
+    "pretest": "npm run lint",
+    "test": "node --require dotenv/config node_modules/.bin/ava"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mshick/librabbitmq.git"
+  },
+  "engines": {
+    "node": ">=6.0.0"
+  },
+  "keywords": [
+    "rabbitmq",
+    "amqplib",
+    "pubsub",
+    "publish",
+    "subscribe",
+    "work-queue",
+    "worker",
+    "queue",
+    "task"
+  ],
+  "bugs": {
+    "url": "https://github.com/mshick/librabbitmq/issues"
+  },
+  "homepage": "https://github.com/mshick/librabbitmq#readme",
+  "ava": {
+    "babel": "inherit",
+    "require": [
+      "babel-register"
+    ]
+  },
+  "dependencies": {
+    "amqplib": "^0.5.1",
+    "hoek": "^4.1.0",
+    "lodash.get": "^4.4.2",
+    "lodash.isempty": "^4.4.0",
+    "lodash.isundefined": "^3.0.1",
+    "qs": "^6.4.0",
+    "retry": "^0.10.1",
+    "uuid": "^3.0.1"
+  },
+  "devDependencies": {
+    "ava": "^0.21.0",
+    "babel-cli": "^6.24.1",
+    "babel-eslint": "^7.2.3",
+    "babel-plugin-transform-runtime": "^6.23.0",
+    "babel-preset-env": "^1.4.0",
+    "babel-preset-stage-1": "^6.24.1",
+    "babel-register": "^6.24.1",
+    "dotenv": "^4.0.0",
+    "eslint": "^4.3.0",
+    "eslint-config-parsley": "^1.2.1",
+    "eslint-plugin-filenames": "^1.2.0",
+    "eslint-plugin-import": "^2.7.0",
+    "rimraf": "^2.6.1"
+  }
+}
