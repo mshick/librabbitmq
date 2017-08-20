@@ -27,49 +27,60 @@ const publishMessage = async function (args, plugin) {
     messageOptions: userMessageOptions
   } = options || {};
 
-  const channelName = userChannelName || getChannelName({method: 'publishMessage', exchange});
-
-  const exchangeOptions = defaultsDeep({},
-    userExchangeOptions,
-    defaultExchangeOptions
-  );
-
-  const messageOptions = defaultsDeep({},
-    userMessageOptions,
-    defaultMessageOptions
-  );
-
-  messageOptions.type = topic;
-
   let channel;
 
-  if (_openChannels[channelName]) {
-    channel = _openChannels[channelName].channel;
-  } else {
-    channel = await createChannel({
-      name: channelName,
-      options: channelOptions,
-      connection
-    }, plugin);
+  try {
+    const channelName = userChannelName || getChannelName({method: 'publishMessage', exchange});
+
+    const exchangeOptions = defaultsDeep({},
+      userExchangeOptions,
+      defaultExchangeOptions
+    );
+
+    const messageOptions = defaultsDeep({},
+      userMessageOptions,
+      defaultMessageOptions
+    );
+
+    messageOptions.type = topic;
+
+    if (_openChannels[channelName]) {
+      channel = _openChannels[channelName].channel;
+    } else {
+      channel = await createChannel({
+        name: channelName,
+        options: channelOptions,
+        connection
+      }, plugin);
+    }
+
+    await channel.assertExchange(exchange, 'topic', exchangeOptions);
+
+    const published = await channel.publish(
+      exchange,
+      `${exchange}.${topic}`,
+      new Buffer(JSON.stringify(payload), messageOptions.contentEncoding),
+      messageOptions
+    );
+
+    if (!preserveChannels) {
+      await channel.close();
+      return {
+        published
+      };
+    }
+
+    return {
+      channel,
+      published
+    };
+  } catch (error) {
+    throw error;
+  } finally {
+    if (!preserveChannels && channel) {
+      await channel.close();
+    }
   }
-
-  await channel.assertExchange(exchange, 'topic', exchangeOptions);
-
-  const published = await channel.publish(
-    exchange,
-    `${exchange}.${topic}`,
-    new Buffer(JSON.stringify(payload), messageOptions.contentEncoding),
-    messageOptions
-  );
-
-  if (!preserveChannels) {
-    await channel.close();
-  }
-
-  return {
-    channel,
-    published
-  };
 };
 
 export default publishMessage;

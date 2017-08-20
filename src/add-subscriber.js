@@ -19,19 +19,21 @@ const defaultSubscriberOptions = {
 };
 
 const addSubscriber = async function (args, plugin) {
+  const {connection, exchange, topic, subscriber, options} = args;
+  const {state: pluginState} = plugin;
+  const {_openChannels} = pluginState;
+
+  const {
+    channelName: userChannelName,
+    channelOptions,
+    exchangeOptions: userExchangeOptions,
+    queueOptions: userQueueOptions,
+    subscriberOptions: userSubscriberOptions
+  } = options || {};
+
+  let channel;
+
   try {
-    const {connection, exchange, topic, subscriber, options} = args;
-    const {state: pluginState} = plugin;
-    const {_openChannels} = pluginState;
-
-    const {
-      channelName: userChannelName,
-      channelOptions,
-      exchangeOptions: userExchangeOptions,
-      queueOptions: userQueueOptions,
-      subscriberOptions: userSubscriberOptions
-    } = options || {};
-
     const channelName = userChannelName || getChannelName({method: 'subscribeToMessages', exchange});
     const exchangeTopic = topic ? `${exchange}.${topic}` : `${exchange}.*`;
 
@@ -39,12 +41,10 @@ const addSubscriber = async function (args, plugin) {
     const queueOptions = defaultsDeep({}, userQueueOptions, defaultQueueOptions);
     const subscriberOptions = defaultsDeep({}, userSubscriberOptions, defaultSubscriberOptions);
 
-    let activeChannel;
-
     if (_openChannels[channelName]) {
-      activeChannel = _openChannels[channelName].channel;
+      channel = _openChannels[channelName].channel;
     } else {
-      activeChannel = await createChannel({
+      channel = await createChannel({
         name: channelName,
         options: channelOptions,
         persist: true,
@@ -52,24 +52,24 @@ const addSubscriber = async function (args, plugin) {
       }, plugin);
     }
 
-    await activeChannel.assertExchange(exchange, 'topic', exchangeOptions);
+    await channel.assertExchange(exchange, 'topic', exchangeOptions);
 
-    const activeQueue = await activeChannel.assertQueue('', queueOptions);
+    const queue = await channel.assertQueue('', queueOptions);
 
-    await activeChannel.bindQueue(activeQueue.queue, exchange, exchangeTopic);
+    await channel.bindQueue(queue.queue, exchange, exchangeTopic);
 
     const consumer = subscriberConsumerFactory({
       subscriber,
-      channel: activeChannel,
-      queue: activeQueue,
+      channel,
+      queue,
       options: subscriberOptions
     });
 
-    const consumed = await activeChannel.consume(activeQueue.queue, consumer, subscriberOptions);
+    const consumed = await channel.consume(queue.queue, consumer, subscriberOptions);
 
     return {
-      channel: activeChannel,
-      queue: activeQueue,
+      channel,
+      queue,
       consumed
     };
   } catch (error) {

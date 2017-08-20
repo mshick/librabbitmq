@@ -8,7 +8,7 @@ const defaultQueueOptions = {
 };
 
 const pushTask = async function (args, plugin) {
-  const {connection, queue, payload, type, correlationId, options} = args;
+  const {connection, queue: queueName, payload, type, correlationId, options} = args;
   const {options: pluginOptions, state: pluginState} = plugin;
   const {preserveChannels, retry: retryOptions} = pluginOptions;
   const {_openChannels} = pluginState;
@@ -20,60 +20,72 @@ const pushTask = async function (args, plugin) {
     taskOptions
   } = options || {};
 
-  const channelName = userChannelName || getChannelName({method: 'pushTask', queue});
+  let channel;
 
-  const defaultTaskOptions = {
-    persistent: true,
-    priority: 0,
-    contentType: 'application/json',
-    contentEncoding: 'utf-8',
-    headers: {
-      'x-retry-count': retryOptions === false ? -1 : 0
+  try {
+    const channelName = userChannelName || getChannelName({method: 'pushTask', queue: queueName});
+
+    const defaultTaskOptions = {
+      persistent: true,
+      priority: 0,
+      contentType: 'application/json',
+      contentEncoding: 'utf-8',
+      headers: {
+        'x-retry-count': retryOptions === false ? -1 : 0
+      }
+    };
+
+    const mergedTaskOptions = defaultsDeep({}, taskOptions, defaultTaskOptions);
+
+    if (type) {
+      mergedTaskOptions.type = type;
     }
-  };
 
-  const mergedTaskOptions = defaultsDeep({}, taskOptions, defaultTaskOptions);
+    if (correlationId) {
+      mergedTaskOptions.correlationId = String(correlationId);
+    }
 
-  if (type) {
-    mergedTaskOptions.type = type;
+    if (_openChannels[channelName]) {
+      channel = _openChannels[channelName].channel;
+    } else {
+      channel = await createChannel({
+        name: channelName,
+        options: channelOptions,
+        connection
+      }, plugin);
+    }
+
+    const queue = await channel.assertQueue(
+      queueName,
+      defaultsDeep({}, queueOptions, defaultQueueOptions)
+    );
+
+    const queued = await channel.sendToQueue(
+      queue.queue,
+      new Buffer(JSON.stringify(payload), mergedTaskOptions.contentEncoding),
+      mergedTaskOptions
+    );
+
+    if (!preserveChannels) {
+      channel.close();
+      return {
+        queue,
+        queued
+      };
+    }
+
+    return {
+      channel,
+      queue,
+      queued
+    };
+  } catch (error) {
+    throw error;
+  } finally {
+    if (!preserveChannels && channel) {
+      channel.close();
+    }
   }
-
-  if (correlationId) {
-    mergedTaskOptions.correlationId = String(correlationId);
-  }
-
-  let activeChannel;
-
-  if (_openChannels[channelName]) {
-    activeChannel = _openChannels[channelName].channel;
-  } else {
-    activeChannel = await createChannel({
-      name: channelName,
-      options: channelOptions,
-      connection
-    }, plugin);
-  }
-
-  const activeQueue = await activeChannel.assertQueue(
-    queue,
-    defaultsDeep({}, queueOptions, defaultQueueOptions)
-  );
-
-  const queued = await activeChannel.sendToQueue(
-    activeQueue.queue,
-    new Buffer(JSON.stringify(payload), mergedTaskOptions.contentEncoding),
-    mergedTaskOptions
-  );
-
-  if (!preserveChannels) {
-    await activeChannel.close();
-  }
-
-  return {
-    channel: activeChannel,
-    queue: activeQueue,
-    queued
-  };
 };
 
 export default pushTask;
