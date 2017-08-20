@@ -1,7 +1,7 @@
 librabbitmq [![Build Status](https://travis-ci.org/mshick/librabbitmq.svg?branch=master)](https://travis-ci.org/mshick/librabbitmq) [![npm version](https://badge.fury.io/js/librabbitmq.svg)](https://badge.fury.io/js/librabbitmq)
 ============
 
-Easy to use methods implementing for common PubSub and job queue patterns with RabbitMQ.
+Easy to use methods implementing common PubSub and job queue patterns with RabbitMQ.
 
 Configuration
 -------------
