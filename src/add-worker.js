@@ -28,27 +28,29 @@ const defaultDoneQueueOptions = {
 };
 
 const addWorker = async function (args, plugin) {
+  const {connection, queue: queueName, worker, options} = args;
+  const {options: pluginOptions, state: pluginState} = plugin;
+  const {
+    retryQueue: pluginRetryOptions,
+    doneQueue: pluginDoneOptions
+  } = pluginOptions;
+
+  const {_openChannels} = pluginState;
+
+  const {
+    channelName: userChannelName,
+    channelOptions,
+    queueOptions,
+    retryQueueOptions: userRetryQueueOptions,
+    retryOptions: userRetryOptions,
+    doneQueueOptions: userDoneQueueOptions,
+    doneOptions: userDoneOptions,
+    workerOptions
+  } = options || {};
+
+  let channel;
+
   try {
-    const {connection, queue: queueName, worker, options} = args;
-    const {options: pluginOptions, state: pluginState} = plugin;
-    const {
-      retryQueue: pluginRetryOptions,
-      doneQueue: pluginDoneOptions
-    } = pluginOptions;
-
-    const {_openChannels} = pluginState;
-
-    const {
-      channelName: userChannelName,
-      channelOptions,
-      queueOptions,
-      retryQueueOptions: userRetryQueueOptions,
-      retryOptions: userRetryOptions,
-      doneQueueOptions: userDoneQueueOptions,
-      doneOptions: userDoneOptions,
-      workerOptions
-    } = options || {};
-
     const channelName = userChannelName || getChannelName({method: 'addWorker', queue: queueName});
 
     const rQueueOptions = defaultsDeep({}, userRetryQueueOptions, defaultRetryQueueOptions);
@@ -65,8 +67,6 @@ const addWorker = async function (args, plugin) {
     if (pluginDoneOptions) {
       doneOptions = defaultsDeep({}, userDoneOptions, pluginDoneOptions);
     }
-
-    let channel;
 
     if (_openChannels[channelName]) {
       channel = _openChannels[channelName].channel;
