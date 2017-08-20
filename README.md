@@ -1,7 +1,7 @@
 librabbitmq [![Build Status](https://travis-ci.org/mshick/librabbitmq.svg?branch=master)](https://travis-ci.org/mshick/librabbitmq) [![npm version](https://badge.fury.io/js/librabbitmq.svg)](https://badge.fury.io/js/librabbitmq)
 ============
 
-Easy to use methods implementing common PubSub and job queue patterns with RabbitMQ.
+Easy to use methods implementing common PubSub and task queue patterns with RabbitMQ.
 
 Configuration
 -------------
@@ -45,7 +45,7 @@ const config = {
 *   `connection.useExisting` will return an existing default connection upon invocation of `createConnection`, useful if you have many plugins but want to just use a single connection. Defaults to `false`.
 *   `preserveChannels` will keep around publish and push channels, minimizing request overhead, but potentially causing [issues](https://github.com/squaremo/amqp.node/issues/144), though none I've been able to replicate
 *   `retryQueue` settings for the retry queue, supporting limits and exponential backoff
-*   `doneQueue` can write finished jobs to a final queue. Defaults to `false`, because it seems like an odd pattern. You're probably better off writing to your own db.
+*   `doneQueue` can write finished tasks to a final queue. Defaults to `false`, because it seems like an odd pattern. You're probably better off writing to your own db.
 
 Additionally, all of the exposed methods take options that get passed to the underlying `amqplib` calls.
 
@@ -87,20 +87,20 @@ const testIt = async function () {
 testIt();
 ```
 
-### Job queue
+### Task queue
 
 ```js
 import * as rmq from 'librabbitmq';
 const {ACK} = rmq.constants;
 
-const worker = function (job) {
+const worker = function (task) {
   const secs = 10;
-  console.log(' [x] Received payload id: %s', job.properties.correlationId);
+  console.log(' [x] Received payload id: %s', task.properties.correlationId);
   console.log(' [x] Task takes %d seconds', secs);
   return new Promise(resolve => {
     setTimeout(() => {
       console.log(' [x] Done');
-      console.log(job.payload);
+      console.log(task.payload);
       resolve({code: ACK});
     }, secs * 1000);
   });

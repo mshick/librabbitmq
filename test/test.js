@@ -69,20 +69,19 @@ test('pubsub', async t => {
   }
 });
 
-test('job queue', async t => {
+test('task queue', async t => {
   const queue = 'work';
   const type = 'test';
 
   let correlationId;
   let payload;
 
-  const worker = function (job) {
+  const worker = function (task) {
     return new Promise(resolve => {
       setTimeout(() => {
         resolve(constants.ACK);
-        t.is(job.properties.correlationId, correlationId);
-        t.is(job.properties.type, type);
-        t.is(job.payload, payload);
+        t.is(task.properties.correlationId, correlationId);
+        t.is(task.payload, payload);
         t.pass();
       }, 500);
     });
