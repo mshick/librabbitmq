@@ -1,7 +1,7 @@
 librabbitmq [![Build Status](https://travis-ci.org/mshick/librabbitmq.svg?branch=master)](https://travis-ci.org/mshick/librabbitmq) [![npm version](https://badge.fury.io/js/librabbitmq.svg)](https://badge.fury.io/js/librabbitmq)
 ============
 
-Easy to use abstractions over RabbitMQ.
+Easy to use methods implementing for common PubSub and job queue patterns with RabbitMQ.
 
 Configuration
 -------------
@@ -60,12 +60,10 @@ Below are the easiest examples.
 
 ```js
 import * as rmq from 'librabbitmq';
-const {ACK} = rmq.constants;
 
 const subscriber = function (message) {
-  return new Promise(resolve => {
+  return new Promise(() => {
     console.log(' [x] Received \'%s\'', message.payload);
-    resolve(ACK);
   });
 };
 
@@ -138,6 +136,12 @@ Implementations
 ---------------
 
 * [hapi-rabbitmq](https://github.com/mshick/hapi-rabbitmq)
+
+Requirements
+------------
+
+*   node.js >= 6.0
+*   RabbitMQ 3.6.11 (only version tested)
 
 TODO
 ----

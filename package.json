@@ -3,7 +3,7 @@
   "version": "0.7.0",
   "author": "Michael Shick <m@shick.us>",
   "license": "MIT",
-  "description": "Easy to use abstractions over RabbitMQ.",
+  "description": "Easy to use methods implementing for common PubSub and job queue patterns with RabbitMQ.",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "scripts": {
