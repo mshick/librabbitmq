@@ -65,6 +65,7 @@ const publishMessage = async function (args, plugin) {
 
     if (!preserveChannels) {
       await channel.close();
+      channel = null;
       return {
         published
       };

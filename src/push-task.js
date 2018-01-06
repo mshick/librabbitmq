@@ -68,6 +68,7 @@ const pushTask = async function (args, plugin) {
 
     if (!preserveChannels) {
       channel.close();
+      channel = null;
       return {
         queue,
         queued
