@@ -1,6 +1,6 @@
 {
   "name": "librabbitmq",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "author": "Michael Shick <m@shick.us>",
   "license": "MIT",
   "description": "Easy to use methods implementing for common PubSub and job queue patterns with RabbitMQ.",
