@@ -49,9 +49,9 @@
     "uuid": "^3.0.1"
   },
   "devDependencies": {
-    "ava": "^0.22.0",
+    "ava": "^0.24.0",
     "babel-cli": "^6.24.1",
-    "babel-eslint": "^7.2.3",
+    "babel-eslint": "^8.1.2",
     "babel-plugin-transform-runtime": "^6.23.0",
     "babel-preset-env": "^1.4.0",
     "babel-preset-stage-1": "^6.24.1",
