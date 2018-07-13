@@ -7,16 +7,19 @@ import get from 'lodash/get';
 import uuid from 'uuid/v4';
 import createChannel from './create-channel';
 
-const getConnectionChannels = function (connection, openChannels) {
+const getConnectionChannels = function(connection, openChannels) {
   return Object.keys(openChannels)
     .filter(channelName => {
-      const connectName = get(openChannels, `${channelName}.connection._connectName`);
+      const connectName = get(
+        openChannels,
+        `${channelName}.connection._connectName`
+      );
       return connectName === connection._connectName;
     })
     .map(channelName => openChannels[channelName]);
 };
 
-const keepConnectionAlive = function (openConnection, options, plugin) {
+const keepConnectionAlive = function(openConnection, options, plugin) {
   const connectionName = openConnection._connectName;
 
   const onConnectionError = async () => {
@@ -24,19 +27,25 @@ const keepConnectionAlive = function (openConnection, options, plugin) {
       plugin.state._defaultConnection = null;
     }
 
-    const connectionOptions = defaultsDeep({}, {connectionName}, options);
+    const connectionOptions = defaultsDeep({}, { connectionName }, options);
 
     const connection = await createConnection(connectionOptions, plugin); // eslint-disable-line
 
-    const connectionChannels = getConnectionChannels(connection, plugin.state._openChannels);
+    const connectionChannels = getConnectionChannels(
+      connection,
+      plugin.state._openChannels
+    );
 
     const channelsCreated = connectionChannels.map(channel => {
-      return createChannel({
-        connection,
-        name: channel.name,
-        options: channel.options,
-        persist: channel.persist
-      }, plugin);
+      return createChannel(
+        {
+          connection,
+          name: channel.name,
+          options: channel.options,
+          persist: channel.persist
+        },
+        plugin
+      );
     });
 
     await Promise.all(channelsCreated);
@@ -47,24 +56,29 @@ const keepConnectionAlive = function (openConnection, options, plugin) {
   openConnection.on('error', onConnectionError);
 };
 
-const createConnection = async function (localOptions, plugin) {
-  const {options: pluginOptions, state: pluginState} = plugin;
+const createConnection = async function(localOptions, plugin) {
+  const { options: pluginOptions, state: pluginState } = plugin;
   const options = defaultsDeep({}, localOptions, pluginOptions);
-  const {connectionName, url, connection: connectionOptions} = options;
-  const {_openConnections, _defaultConnection} = pluginState;
+  const { connectionName, url, connection: connectionOptions } = options;
+  const { _openConnections, _defaultConnection } = pluginState;
 
   if (connectionOptions.useExisting && _defaultConnection) {
     return _defaultConnection;
   }
 
   const connectName = connectionName || uuid();
-  const connectUrl = isEmpty(connectionOptions.tuning) ? url : `${url}?${qs.stringify(connectionOptions.tuning)}`;
+  const connectUrl = isEmpty(connectionOptions.tuning)
+    ? url
+    : `${url}?${qs.stringify(connectionOptions.tuning)}`;
   const operation = retry.operation(connectionOptions.retry);
 
   return new Promise((resolve, reject) => {
     operation.attempt(async () => {
       try {
-        const connection = await amqp.connect(connectUrl, connectionOptions.socket);
+        const connection = await amqp.connect(
+          connectUrl,
+          connectionOptions.socket
+        );
         connection._connectName = connectName;
         _openConnections[connectName] = connection;
         pluginState._defaultConnection = _defaultConnection || connection;

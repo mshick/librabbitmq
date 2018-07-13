@@ -14,30 +14,34 @@ const defaultMessageOptions = {
   contentEncoding: 'utf-8'
 };
 
-const publishMessage = async function (args, plugin) {
-  const {exchange, topic, payload, connection, options} = args;
-  const {options: pluginOptions, state: pluginState} = plugin;
-  const {preserveChannels} = pluginOptions;
-  const {_openChannels} = pluginState;
+const publishMessage = async function(args, plugin) {
+  const { exchange, topic, payload, connection, options } = args;
+  const { options: pluginOptions, state: pluginState } = plugin;
+  const { preserveChannels } = pluginOptions;
+  const { _openChannels } = pluginState;
 
   const {
     channelName: userChannelName,
     channelOptions,
     exchangeOptions: userExchangeOptions,
     messageOptions: userMessageOptions
-  } = options || {};
+  } =
+    options || {};
 
   let channel;
 
   try {
-    const channelName = userChannelName || getChannelName({method: 'publishMessage', exchange});
+    const channelName =
+      userChannelName || getChannelName({ method: 'publishMessage', exchange });
 
-    const exchangeOptions = defaultsDeep({},
+    const exchangeOptions = defaultsDeep(
+      {},
       userExchangeOptions,
       defaultExchangeOptions
     );
 
-    const messageOptions = defaultsDeep({},
+    const messageOptions = defaultsDeep(
+      {},
       userMessageOptions,
       defaultMessageOptions
     );
@@ -47,11 +51,14 @@ const publishMessage = async function (args, plugin) {
     if (_openChannels[channelName]) {
       channel = _openChannels[channelName].channel;
     } else {
-      channel = await createChannel({
-        name: channelName,
-        options: channelOptions,
-        connection
-      }, plugin);
+      channel = await createChannel(
+        {
+          name: channelName,
+          options: channelOptions,
+          connection
+        },
+        plugin
+      );
     }
 
     await channel.assertExchange(exchange, 'topic', exchangeOptions);
@@ -59,7 +66,7 @@ const publishMessage = async function (args, plugin) {
     const published = await channel.publish(
       exchange,
       `${exchange}.${topic}`,
-      new Buffer(JSON.stringify(payload), messageOptions.contentEncoding),
+      Buffer.from(JSON.stringify(payload), messageOptions.contentEncoding),
       messageOptions
     );
 

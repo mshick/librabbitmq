@@ -1,6 +1,7 @@
 import defaultsDeep from 'lodash/defaultsDeep';
 
-import {ACK, NACK, REJECT, RETRY} from './constants';
+import { ACK, NACK, REJECT, RETRY } from './constants';
+import _assertQueue from './assert-queue';
 import _createConnection from './create-connection';
 import _closeConnection from './close-connection';
 import _createChannel from './create-channel';
@@ -49,46 +50,51 @@ const setGlobals = globals => {
 /* Exports */
 
 export const state = STATE;
-export const constants = {ACK, NACK, REJECT, RETRY};
+export const constants = { ACK, NACK, REJECT, RETRY };
 
-export const createConnection = async function (options, globals = {}) {
+export const createConnection = async function(options, globals = {}) {
   setGlobals(globals);
   const settings = defaultsDeep({}, options, globals.options, DEFAULTS);
   return _createConnection(settings, globals);
 };
 
-export const closeConnection = async function (options, globals = {}) {
+export const closeConnection = async function(options, globals = {}) {
   setGlobals(globals);
   return _closeConnection(options, globals);
 };
 
-export const createChannel = async function (options, globals = {}) {
+export const assertQueue = async function(args, globals = {}) {
+  setGlobals(globals);
+  return _assertQueue(args, globals);
+};
+
+export const createChannel = async function(options, globals = {}) {
   setGlobals(globals);
   const settings = defaultsDeep({}, options, globals.options, DEFAULTS);
   return _createChannel(settings, globals);
 };
 
-export const pushTask = async function (args, globals = {}) {
+export const pushTask = async function(args, globals = {}) {
   setGlobals(globals);
   return _pushTask(args, globals);
 };
 
-export const addWorker = async function (args, globals = {}) {
+export const addWorker = async function(args, globals = {}) {
   setGlobals(globals);
   return _addWorker(args, globals);
 };
 
-export const publishMessage = async function (args, globals = {}) {
+export const publishMessage = async function(args, globals = {}) {
   setGlobals(globals);
   return _publishMessage(args, globals);
 };
 
-export const addSubscriber = async function (args, globals = {}) {
+export const addSubscriber = async function(args, globals = {}) {
   setGlobals(globals);
   return _addSubscriber(args, globals);
 };
 
-export const getChannelName = async function (args, globals = {}) {
+export const getChannelName = async function(args, globals = {}) {
   setGlobals(globals);
   return _getChannelName(args, globals);
 };

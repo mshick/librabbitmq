@@ -1,13 +1,13 @@
-import {ACK, NACK} from './constants';
+import { ACK, NACK } from './constants';
 
-const consumerFactory = function (args) {
-  const {channel, queue, subscriber, options} = args;
-  const {noAck} = options || {};
+const consumerFactory = function(args) {
+  const { channel, queue, subscriber, options } = args;
+  const { noAck } = options || {};
 
   return async message => {
     try {
-      const {content, properties} = message;
-      const {contentType, contentEncoding} = properties;
+      const { content, properties } = message;
+      const { contentType, contentEncoding } = properties;
 
       let payload = content.toString(contentEncoding);
 

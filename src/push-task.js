@@ -7,23 +7,33 @@ const defaultQueueOptions = {
   maxPriority: 0
 };
 
-const pushTask = async function (args, plugin) {
-  const {connection, queue: queueName, payload, type, correlationId, options} = args;
-  const {options: pluginOptions, state: pluginState} = plugin;
-  const {preserveChannels, retry: retryOptions} = pluginOptions;
-  const {_openChannels} = pluginState;
+const pushTask = async function(args, plugin) {
+  const {
+    connection,
+    queue: queueName,
+    payload,
+    type,
+    correlationId,
+    options
+  } = args;
+  const { options: pluginOptions, state: pluginState } = plugin;
+  const { preserveChannels, retry: retryOptions } = pluginOptions;
+  const { _openChannels } = pluginState;
 
   const {
     channelName: userChannelName,
     channelOptions,
     queueOptions,
     taskOptions
-  } = options || {};
+  } =
+    options || {};
 
   let channel;
 
   try {
-    const channelName = userChannelName || getChannelName({method: 'pushTask', queue: queueName});
+    const channelName =
+      userChannelName ||
+      getChannelName({ method: 'pushTask', queue: queueName });
 
     const defaultTaskOptions = {
       persistent: true,
@@ -48,11 +58,14 @@ const pushTask = async function (args, plugin) {
     if (_openChannels[channelName]) {
       channel = _openChannels[channelName].channel;
     } else {
-      channel = await createChannel({
-        name: channelName,
-        options: channelOptions,
-        connection
-      }, plugin);
+      channel = await createChannel(
+        {
+          name: channelName,
+          options: channelOptions,
+          connection
+        },
+        plugin
+      );
     }
 
     const queue = await channel.assertQueue(
@@ -62,7 +75,7 @@ const pushTask = async function (args, plugin) {
 
     const queued = await channel.sendToQueue(
       queue.queue,
-      new Buffer(JSON.stringify(payload), mergedTaskOptions.contentEncoding),
+      Buffer.from(JSON.stringify(payload), mergedTaskOptions.contentEncoding),
       mergedTaskOptions
     );
 

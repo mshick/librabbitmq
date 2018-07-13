@@ -1,5 +1,5 @@
-const closeConnection = async function (options, globals) {
-  const {state} = globals;
+const closeConnection = async function(options, globals) {
+  const { state } = globals;
 
   const closingChannels = [];
   const closingConnections = [];

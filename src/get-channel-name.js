@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-const getChannelName = function ({method, exchange, queue}) {
+const getChannelName = function({ method, exchange, queue }) {
   assert(method, 'method is required');
   assert(exchange || queue, 'exchange or queue is required');
 

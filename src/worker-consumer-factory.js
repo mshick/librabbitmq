@@ -1,12 +1,12 @@
 import defaultsDeep from 'lodash/defaultsDeep';
 import isUndefined from 'lodash/isUndefined';
-import {ACK, NACK, REJECT, RETRY} from './constants';
+import { ACK, NACK, REJECT, RETRY } from './constants';
 
-const getPriority = function ({maxPriority, maxCount, retryCount}) {
+const getPriority = function({ maxPriority, maxCount, retryCount }) {
   return maxPriority - Math.floor((retryCount * maxPriority) / maxCount);
 };
 
-const getFailReason = function ({retryCount, maxCount, error}) {
+const getFailReason = function({ retryCount, maxCount, error }) {
   const fail = {};
 
   if (error) {
@@ -22,12 +22,12 @@ const getFailReason = function ({retryCount, maxCount, error}) {
   return fail;
 };
 
-const sendToDoneQueue = function ({channel, doneQueue, maxCount}) {
-  return ({retryCount, error, result, properties, content}) => {
+const sendToDoneQueue = function({ channel, doneQueue, maxCount }) {
+  return ({ retryCount, error, result, properties, content }) => {
     const done = {};
 
     if (error || retryCount) {
-      done.fail = getFailReason({maxCount, retryCount, error});
+      done.fail = getFailReason({ maxCount, retryCount, error });
     }
 
     if (result) {
@@ -44,25 +44,25 @@ const sendToDoneQueue = function ({channel, doneQueue, maxCount}) {
   };
 };
 
-const sendToRetryQueue = function ({channel, queue, retryOptions, retryQueueOptions}) {
-  const {maxPriority} = retryQueueOptions || {};
-  const {
-    maxCount,
-    factor,
-    minTimeout,
-    maxTimeout,
-    suffix
-  } = retryOptions || {};
+const sendToRetryQueue = function({
+  channel,
+  queue,
+  retryOptions,
+  retryQueueOptions
+}) {
+  const { maxPriority } = retryQueueOptions || {};
+  const { maxCount, factor, minTimeout, maxTimeout, suffix } =
+    retryOptions || {};
 
-  return ({retryCount, properties, content}) => {
+  return ({ retryCount, properties, content }) => {
     let priority = 0;
-    let {expiration, headers} = properties;
+    let { expiration, headers } = properties;
     const deathHeader = headers['x-death'];
 
     if (suffix) {
       if (deathHeader && deathHeader.length) {
         expiration = Number(deathHeader[0]['original-expiration'] || 0);
-        expiration *= (deathHeader[0].count + 1);
+        expiration *= deathHeader[0].count + 1;
       } else {
         expiration = Number(expiration || 0);
       }
@@ -74,11 +74,12 @@ const sendToRetryQueue = function ({channel, queue, retryOptions, retryQueueOpti
       }
 
       if (maxPriority) {
-        priority = getPriority({maxPriority, maxCount, retryCount});
+        priority = getPriority({ maxPriority, maxCount, retryCount });
       }
     }
 
-    const options = defaultsDeep({},
+    const options = defaultsDeep(
+      {},
       {
         priority,
         expiration,
@@ -93,7 +94,7 @@ const sendToRetryQueue = function ({channel, queue, retryOptions, retryQueueOpti
   };
 };
 
-const consumerFactory = function ({
+const consumerFactory = function({
   channel,
   queue,
   worker,
@@ -102,7 +103,7 @@ const consumerFactory = function ({
   retryOptions,
   doneQueue
 }) {
-  const {maxCount} = retryOptions || {};
+  const { maxCount } = retryOptions || {};
 
   let retry;
   if (retryOptions) {
@@ -124,8 +125,8 @@ const consumerFactory = function ({
   }
 
   return message => {
-    const {content, properties} = message;
-    const {contentType, contentEncoding} = properties;
+    const { content, properties } = message;
+    const { contentType, contentEncoding } = properties;
 
     let payload = content.toString(contentEncoding);
 
@@ -143,7 +144,7 @@ const consumerFactory = function ({
 
     const onResult = result => {
       if (typeof result === 'string') {
-        result = {code: result};
+        result = { code: result };
       }
 
       if (result && result.code) {
@@ -159,7 +160,7 @@ const consumerFactory = function ({
       }
 
       if (finished) {
-        finished({properties, content, result});
+        finished({ properties, content, result });
       }
     };
 
@@ -169,7 +170,7 @@ const consumerFactory = function ({
         return channel.nack(message);
       }
 
-      const {headers} = properties;
+      const { headers } = properties;
       const retryCountHeader = headers['x-retry-count'];
 
       // Will require more work
@@ -185,17 +186,19 @@ const consumerFactory = function ({
       }
 
       if (shouldRetry && retry) {
-        retry({properties, content, retryCount});
+        retry({ properties, content, retryCount });
         return;
       }
 
       // No retries, but doneQueue is configured
       if (finished) {
-        finished({properties, content, retryCount, error});
+        finished({ properties, content, retryCount, error });
       }
     };
 
-    worker(consumerObj).then(onResult).catch(onError);
+    worker(consumerObj)
+      .then(onResult)
+      .catch(onError);
   };
 };
 
